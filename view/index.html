@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>demo</title>
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <p id="result" style="text-align: center;margin-top: 50px;">请验证..</p>
+    <!-- 点击式按钮建议高度介于36px与46px  -->
+    <!-- 嵌入式仅需设置宽度，高度根据宽度自适应，最小宽度为200px -->
+    <div id="vaptchaContainer" style="width: 300px;height: 40px;margin: 0 auto;margin-top: 20px;">
+    <!--vaptcha-container是用来引入VAPTCHA的容器，下面代码为预加载动画，仅供参考-->
+        <div class="vaptcha-init-main">
+            <div class="vaptcha-init-loading">
+                <a href="/" target="_blank">
+                    <img src="https://r.vaptcha.com/public/img/vaptcha-loading.gif" />
+                </a>
+                <span class="vaptcha-text">Vaptcha启动中...</span>
+            </div>
+        </div>
+    </div>
+    <div style="text-align: center;margin-top: 20px;margin-left: 30px;">
+        <button id="validate" type="button" class="btn btn-primary">提交验证</button>
+        <button id="reset" type="button" class="btn btn-default">重置</button>
+    </div>
+    <!-- <Button>提交验证</Button> -->
+  </div>
+</body>
+</html>
+<script src="https://r.vaptcha.com/public/js/jquery-3.2.1.min.js"></script>
+<script src="https://v.vaptcha.com/v3.js"></script>
+<script>
+  var token = ''
+  vaptcha({
+      vid: '',
+      type: 'click', // 展现类型 点击式
+      container: '#vaptchaContainer', // 按钮容器，可为Element 或者 selector
+      offline_server: '/offline',
+      // mode: 'offline' 调试离线模式时使用
+  }).then(function (vaptchaObj) {
+      vaptchaObj.render()// 调用验证实例 vaptchaObj 的 render 方法加载验证按钮
+      vaptchaObj.listen('pass', function() {
+        token = vaptchaObj.getToken()
+      })
+      $('#reset').on('click', function () {
+        vaptchaObj.reset()
+        $('#result').html('请验证..');
+      });
+  })
+  $('#validate').on('click', function() {
+    $.post('/validate', 
+      {
+        token: token
+      }, 
+      function(res) {
+        // console.log(res)
+        if(res.success == 1) {
+          $('#result').html('验证成功');
+        } else {
+          $('#result').html('验证失败');
+        }
+      },
+    'json')
+  })
+</script>
